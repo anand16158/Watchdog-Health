@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "mediatek,mt7981";
+};
+
+&{/} {
+    smart_watchdog: watchdog@0 {
+        compatible = "innovate,smart-watchdog";
+
+        timeout-sec = <10>;      /* reboot if not pinged in 10s */
+        nowayout;                /* cannot be stopped once started */
+
+        status = "okay";
+    };
+};
