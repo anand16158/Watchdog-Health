@@ -1,0 +1,5 @@
+- Uses Linux watchdog framework
+- DT-driven configuration
+- Timer-based timeout handling
+- Panic triggers reboot via kernel
+- Suitable for routers, gateways, APs
