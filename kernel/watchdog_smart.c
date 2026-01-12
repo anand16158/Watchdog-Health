@@ -56,6 +56,7 @@ static const struct watchdog_ops smart_wdt_ops = {
 	.start = smart_wdt_start,
 	.stop  = smart_wdt_stop,
 	.ping  = smart_wdt_ping,
+	.ioctl = smart_wdt_ioctl,
 };
 
 static const struct watchdog_info smart_wdt_info = {
@@ -114,6 +115,34 @@ static struct platform_driver smart_wdt_driver = {
 		.of_match_table = smart_wdt_of_match,
 	},
 };
+static int smart_wdt_ioctl(struct watchdog_device *wdd,
+			   unsigned int cmd, unsigned long arg)
+{
+	int timeout;
+
+	switch (cmd) {
+	case WDIOC_GETTIMEOUT:
+		return put_user(wdd->timeout, (int __user *)arg);
+
+	case WDIOC_SETTIMEOUT:
+		if (get_user(timeout, (int __user *)arg))
+			return -EFAULT;
+
+		if (timeout <= 0)
+			return -EINVAL;
+
+		wdd->timeout = timeout;
+		swdt.timeout = timeout;
+		mod_timer(&swdt.timer, jiffies + timeout * HZ);
+		return 0;
+
+	case WDIOC_KEEPALIVE:
+		mod_timer(&swdt.timer, jiffies + swdt.timeout * HZ);
+		return 0;
+	}
+
+	return -ENOTTY;
+}
 
 module_platform_driver(smart_wdt_driver);
 
